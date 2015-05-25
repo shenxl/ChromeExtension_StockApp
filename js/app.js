@@ -22,7 +22,7 @@ angular.module('myApp', ['toggle-switch'])
                         params: tempobject,
                         cache: false
                     }).success(function (data) {
-                        d.resolve(data[opt].data);
+                        d.resolve(data[opt]);
                     }).error(function (err) {
                         d.reject(data.msg);
                     });
@@ -46,32 +46,50 @@ angular.module('myApp', ['toggle-switch'])
             $timeout(updateTime, 1000);
         };
 
-        $scope.stock = {};
-
+        var stock = $scope.stock = {};
+        var queryCache = [];
         $scope.runLoad = true;
-        var test = function(n,o){
-            console.log(o +" =>" + n);
-        };
+        $scope.startQuery = true;
 
         var reloadData = function(){
            if($scope.runLoad){
                Stock.getStockInfo("getWPJQBStockList", {today: 1})
                    .then(function (data) {
-                       $scope.stock.info = data;
+                       $scope.stock.info = data.data;
                        console.log("here");
-                       $scope.timer = $timeout(reloadData, 7500);
+                       //$scope.timer = $timeout(reloadData, 7500);
                    });
+
            }
            else{
                if($scope.timer)
                {
                    $timeout.cancel($scope.timer);
+                   $scope.stock = {};
                }
            }
 
         };
 
+        var queryData = function(){
+            if(stock.info){
+                angular.forEach(stock.info,function(data){
+                    queryCache.push(data.attr.stockcode);
+                })
+                Stock.getStockInfo("getQuote", queryCache)
+                    .then(function (result) {
+                        console.log(result);
+                        //angular.forEach(result,function(data){
+                        //    console.log(data);
+                        //});
+                        //$scope.timer = $timeout(reloadData, 7500);
+                    });
+            }
+        }
+
+
         $scope.$watch('runLoad',reloadData);
+        $scope.$watch('stock.info',queryData,true);
 
 
         function handleError(response) {
