@@ -1,6 +1,6 @@
 angular.module('myApp', ['toggle-switch'])
     .provider('Stock', function () {
-        var baseUrl = "";
+        var baseUrl = {};
 
         this.setBaseUrl = function (baseUrl) {
             if (baseUrl) this.baseUrl = baseUrl;
@@ -18,13 +18,41 @@ angular.module('myApp', ['toggle-switch'])
 
                     $http({
                         method: 'GET',
-                        url: self.baseUrl + '/mobileshortmessage/combo.php',
+                        url: self.baseUrl.query + '/mobileshortmessage/combo.php',
                         params: tempobject,
                         cache: false
                     }).success(function (data) {
                         d.resolve(data[opt]);
                     }).error(function (err) {
-                        d.reject(data.msg);
+                        d.reject(err);
+                    });
+                    return d.promise;
+                },
+                login: function(){
+                    var d = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: self.baseUrl.login + '/api/index.php',
+                        params: {},
+                        cache: false
+                    }).success(function(data){
+                        d.resolve(data)
+                    }).error(function(err){
+                        d.reject(err)
+                    });
+                    return d.promise;
+                },
+                doCookie:function(){
+                    var d = $q.defer();
+                    $http({
+                        method: 'GET',
+                        url: self.baseUrl.cookie + '/docookie.php',
+                        params: {},
+                        cache: false
+                    }).success(function(data){
+                        d.resolve(data)
+                    }).error(function(err){
+                        d.reject(err)
                     });
                     return d.promise;
                 }
@@ -33,7 +61,11 @@ angular.module('myApp', ['toggle-switch'])
     })
 
     .config(function (StockProvider) {
-        StockProvider.setBaseUrl('http://vaserviece.10jqka.com.cn');
+        StockProvider.setBaseUrl({
+            login:'http://adm.10jqka.com.cn',
+            cookie:'http://www.10jqka.com.cn',
+            query:'http://vaserviece.10jqka.com.cn'
+        });
     })
 
     .controller('MainCtrl', function ($scope, $timeout, Stock) {
@@ -46,17 +78,18 @@ angular.module('myApp', ['toggle-switch'])
             $timeout(updateTime, 1000);
         };
 
-        var stock = $scope.stock = {};
+        var _stock = $scope.stock = {};
+        var _queryData = $scope.queryData = {};
         var queryCache = [];
-        $scope.runLoad = true;
+        $scope.runLoad = false;
         $scope.startQuery = true;
 
         var reloadData = function(){
            if($scope.runLoad){
                Stock.getStockInfo("getWPJQBStockList", {today: 1})
                    .then(function (data) {
+                       $scope.queryData = data.data;
                        $scope.stock.info = data.data;
-                       console.log("here");
                        //$scope.timer = $timeout(reloadData, 7500);
                    });
 
@@ -71,13 +104,30 @@ angular.module('myApp', ['toggle-switch'])
 
         };
 
-        var queryData = function(){
-            if(stock.info){
-                angular.forEach(stock.info,function(data){
-                    queryCache.push(data.attr.stockcode);
-                })
+        var queryData = function(cache){
+            if($scope.queryData){
+                // 若数据源有更新，则需要刷新缓存
+                if(cache !== {}) {
+                    angular.forEach($scope.queryData, function (data) {
+                        queryCache.push(data.attr.stockcode);
+                    });
+                }
+
                 Stock.getStockInfo("getQuote", queryCache)
                     .then(function (result) {
+                        for(var key in result){
+                            if(result.hasOwnProperty(key)){
+                                if(_stock.info[key]){
+                                    _stock.info[key] = result[key];
+                                }else {
+                                    angular.forEach(_stock.info, function (data) {
+                                        if (data.attr.stockcode === key) {
+                                            data[key] = result[key];
+                                        }
+                                    });
+                                }
+                            }
+                        }
                         console.log(result);
                         //angular.forEach(result,function(data){
                         //    console.log(data);
@@ -89,7 +139,7 @@ angular.module('myApp', ['toggle-switch'])
 
 
         $scope.$watch('runLoad',reloadData);
-        $scope.$watch('stock.info',queryData,true);
+        $scope.$watch('queryData',queryData,true);
 
 
         function handleError(response) {
