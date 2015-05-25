@@ -8,7 +8,8 @@
     "http://adm.10jqka.com.cn/api/"
   ],
   "background": {
-    "scripts": ["js/vendor/angular.min.js"]
+    "scripts": ["js/vendor/angular.min.js",
+      "js/vendor/angular-toggle-switch.min.js"]
   },
   "content_security_policy": "script-src 'self'; object-src 'self'",
   "chrome_url_overrides" : {

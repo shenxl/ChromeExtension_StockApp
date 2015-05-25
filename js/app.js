@@ -1,4 +1,4 @@
-angular.module('myApp', [])
+angular.module('myApp', ['toggle-switch'])
     .provider('Stock', function () {
         var baseUrl = "";
 
@@ -47,20 +47,33 @@ angular.module('myApp', [])
         };
 
         $scope.stock = {};
+
+        $scope.runLoad = true;
+
+        //$scope.$watch('runLoad',test);
+
+        var test = function() {
+            console.log("OH no!");
+        };
+
         var reloadData = function(){
-            Stock.getStockInfo("getWPJQBStockList", {today: 1})
-                .then(function (data) {
-                    $scope.stock.info = data;
-                    console.log("here");
-                    $timeout(reloadData, 5000);
-                });
+           if($scope.runLoad){
+               Stock.getStockInfo("getWPJQBStockList", {today: 1})
+                   .then(function (data) {
+                       $scope.stock.info = data;
+                       console.log("here");
+                       $scope.timer = $timeout(reloadData, 7500);
+                   });
+           }
+           else{
+               if($scope.timer)
+               {
+                   $timeout.cancel($scope.timer);
+               }
+           }
 
         };
 
-
-        // stockInfoFactory.getInfo(flag).then(function success(response) {
-        //     $scope.info = response.data;
-        // }, handleError);
 
         function handleError(response) {
             console.log('Error:' + response.data);
@@ -68,11 +81,9 @@ angular.module('myApp', [])
 
         $scope.OrderByTime = function (item) {
             var parts = item.data['.ctime'].split(':');
-            var num = parts[0] * 60 + parts[1];
-            return num;
-        }
+            return parts[0] * 60 + parts[1];
+        };
 
         // Kick off the update function
         updateTime();
-        reloadData();
     });
