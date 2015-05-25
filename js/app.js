@@ -49,11 +49,8 @@ angular.module('myApp', ['toggle-switch'])
         $scope.stock = {};
 
         $scope.runLoad = true;
-
-        //$scope.$watch('runLoad',test);
-
-        var test = function() {
-            console.log("OH no!");
+        var test = function(n,o){
+            console.log(o +" =>" + n);
         };
 
         var reloadData = function(){
@@ -73,6 +70,8 @@ angular.module('myApp', ['toggle-switch'])
            }
 
         };
+
+        $scope.$watch('runLoad',reloadData);
 
 
         function handleError(response) {
