@@ -1,0 +1,31 @@
+<!doctype html>
+<html data-ng-app="myApp" data-ng-csp="">
+  <head>
+    <meta charset="UTF-8">
+    <title>showMeTheMoney</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/main.css">
+  </head>
+  <body>
+    <div class="container">
+      <div ng-controller="MainCtrl">
+        <div id="datetime">
+          <h1>{{ date.raw | date:'hh:mm:ss' }}</h1>
+          <h2>{{ date.raw | date:'EEEE, MMMM yyyy' }}</h2>
+        </div>
+        <div class="stock">
+          <!--<pre ng-repeat="info in stock.info | orderBy:OrderByTime: true ">-->
+            <!--code:{{info.attr.stockcode}}-->
+            <!--price:{{info.data[".price"]}}-->
+            <!--ctime:{{info.data[".ctime"]}}-->
+          <!--</pre>-->
+<!-- stockname:{{info.data[".stockname"]}}</br> -->
+<!--             <pre>{{info | json}}</pre>  -->
+        </div>
+
+      </div>
+    </div>
+    <script src="./js/vendor/angular.min.js"></script>
+    <script src="./js/app.js"></script>
+  </body>
+</html>
